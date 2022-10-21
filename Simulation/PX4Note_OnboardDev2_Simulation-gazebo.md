@@ -33,6 +33,14 @@ $make px4_sitl gazebo
 
 编译完成会弹出gazebo窗口，可以通过运行QGC进行飞行控制。
 
+- 垂起仿真
+
+  ```shell
+  $ make px4_sitl gazebo_standard_vtol
+  ```
+
+  
+
 ## 多机仿真
 
 PX4的Tools目录下提供了多机仿真启动脚本**gazebo_sitl_multiple_run.sh**。
