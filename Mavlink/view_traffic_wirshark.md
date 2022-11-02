@@ -1,24 +1,30 @@
 # 使用wireshark进行mavlink调试
 
+wireshark是功能非常强大的网络数据抓包工具，可以通过配置mavlink插件，更好的抓取、过滤mavlink消息。并且可以显示mavlink消息各字段的详细内容。
+
 ## 配置
 
-### 安装wireshark
+### Windows下安装
+
+Windows下安装非常简单，双击安装文件即可。
+
+安装完成后，双击打开桌面快捷方式，可以启动wireshark。
+
+### linux下安装
 
 ```shell
-sudo apt-add-repository ppa:wireshark-dev/stable
-sudo apt-get install wireshark
+$ sudo apt-add-repository ppa:wireshark-dev/stable
+$ sudo apt-get install wireshark
 
 ## 添加到用户组
-sudo adduser $USER wireshark
+$ sudo adduser $USER wireshark
 ```
 
-输入命令启动
+ubuntu下通过输入命令启动wireshark
 
 ```shell
-wireshark
+$ wireshark
 ```
-
-
 
 ### 插件生成与配置
 
@@ -30,7 +36,9 @@ wireshark
 python3 -m pymavlink.tools.mavgen --lang=WLua --wire-protocol=2.0 --output=mavlink_2_common message_definitions/v1.0/common.xml
 ```
 
-插件**mavlink_2_common.lua**.会在当前目录下创建
+会在当前输入命令所在目录下生成**mavlink_2_common.lua**.该文件就是mavlink开发对应的lua语言文件。
+
+在`nextpilot-firmware/tools/mavlink`文件夹下可以找到该文件。
 
 #### 配置插件
 
@@ -51,42 +59,82 @@ udp_dissector_table:add(14580, mavlink_proto)
 
 仿真环境下，GCS连接端口为：
 
-18570<---->14550
+gazebo：18570  <---->  GCS：14550
 
 ### 导入插件
 
-命令行输入`wireshark`打开软件，在Help->Folders，查看Global Lua Plugins的路径，并将生成的插件**mavlink_2_common.lua**文件拷贝至该路径下，例如：
+这一步就是将上一步生成的**mavlink_2_common.lua**文件作为插件导入wirshark。
 
-```shell
-$ sudo cp mavlink_2_common.lua /usr/lib/x86_64-linux-gnu/wireshark/plugins/
-```
+- 查看插件路径
 
-重启wireshark软件。
+  打开软件`wireshark`，在Help->Folders，查看Global Lua Plugins的路径。
 
+  Ubuntu系统下路径：
 
+  ```shell
+  /usr/lib/x86_64-linux-gnu/wireshark/plugins/
+  ```
 
+  Windows系统下路径：
 
+  ```shell
+  C:/Program Files/Wireshark/plugins
+  ```
+
+- 导入插件
+
+  并将生成的插件**mavlink_2_common.lua**文件拷贝至该路径下即可。
+
+  ubuntu下可以通过cp命令拷贝：
+
+  ```shell
+  $ sudo cp mavlink_2_common.lua /usr/lib/x86_64-linux-gnu/wireshark/plugins/
+  ```
+
+- 重启wireshark
+
+  导入插件后，重启wireshark软件。
 
 ## 使用
 
+### 打开wireshark
+
+打开wirshark后
+
 ### 过滤
+
+可以通过过滤框中输入`mavlink_proto`进行mavlink消息的过滤。
+
+![img](imgs/live_output_filtered.jpg)
+
+#### 常用过滤条件
 
 - 只查看地面站发送的消息
 
 地面站的comp_id=0xbe=190
 
 ```shell
+mavlink_proto.compid == 190
+```
+
+- 通过msgid过滤消息
+
+```shell
 mavlink_proto.msgid==0
 ```
 
+#### 其他
 
-
-
+过滤条件可以进行与或结合，组成更复杂的条件
 
 ```shell
 mavlink_proto.msgid==0 && mavlink_proto.compid == 1 && 
 (ip.addr == 10.0.115.155 && ip.dst == 10.0.115.141)
 ```
 
+### 查看mavlink消息具体内容
 
+可以双击抓取的mavlink消息，查看具体信息。
+
+![img](imgs/mavlink_message_details.jpg)
 
