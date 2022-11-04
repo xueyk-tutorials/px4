@@ -49,8 +49,6 @@ $ wget -i gazebo_models.txt
 $ ls model.tar.g* | xargs -n1 tar xzvf
 ```
 
-
-
 方式二：通过仓库下载
 
 ```shell
@@ -59,6 +57,13 @@ git clone https://github.com/osrf/gazebo_models.git models
 ```
 
 
+
+## gazebo world
+
+```shell
+# 查看本地的默认worlds
+$ ls /usr/share/gazebo-9/worlds/
+```
 
 
 
