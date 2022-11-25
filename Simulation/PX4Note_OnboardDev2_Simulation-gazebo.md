@@ -15,12 +15,60 @@ $ dpkg -l | grep gazebo
 ### 安装显卡驱动
 
 由于仿真对显卡有一定要求，推荐搭载英伟达独显并且安装好驱动（ubuntu默认安装的是nouveau驱动，无法真正调用显卡性能），显卡性能差或者驱动没安装会导致仿真画面黯淡无光。
+推荐使用Ubuntu自带的software update进行显卡驱动的更新。如果显卡驱动更新后gazebo显示画面还是黯淡无光，需要进行一下显卡性能配置：
+```shell
+$ nvidia-settings
+```
+然后在NVIDIA X Server Settings界面中左侧选择PRIME Profiles，然后勾选NVIDIA(Performance Mode)，重启即可。
 
 ### 下载PX4源码
 
-请先参考PX4开发笔记1，下载PX4源码并运行`ubuntu.sh`进行基本配置。
+- 配置全局加速，防止GitHub仓库下载出现问题：
 
+```shell
+$ git config --global url."https://github.91chi.fun/https://github.com/".insteadOf https://github.com/
+```
 
+- 下载源码
+
+```shell
+$ git clone https://github.com/PX4/PX4-Autopilot.git
+```
+
+- 检出版本v1.12.3
+
+```shell
+$ cd PX4-Autopilot
+$ git tag					# 查看可以选择的版本
+$ git checkout v1.12.3    	# 比如此处选择 v1.12.3 版本
+```
+
+- 更新子仓库
+
+```shell
+$ git submodule sync --recursive
+$ git submodule update --init --recursive
+```
+
+### 下载依赖
+
+运行`ubuntu.sh`进行基本配置。
+
+```shell
+$ cd PX4-Autopilot
+# 选择1.全部下载安装（推荐）
+$ bash ./Tools/setup/ubuntu.sh
+# 选择2.忽略nuttx
+$ bash ./Tools/setup/ubuntu.sh --no-nuttx 
+# 选择3.忽略sim工具
+$ bash ./Tools/setup/ubuntu.sh --no-sim-tools
+```
+
+### QGC安装
+
+QGC（QGroundControl）是PX4飞控的地面控制站。
+
+参考: https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html
 
 ## 单机仿真
 
@@ -31,7 +79,9 @@ $cd PX4-Autopilot
 $make px4_sitl gazebo
 ```
 
-编译完成会弹出gazebo窗口，可以通过运行QGC进行飞行控制。
+编译完成会弹出gazebo窗口，显示一个四旋翼iris无人机，可以通过运行QGC进行飞行控制。
+
+其他仿真编译命令：
 
 - 垂起仿真
 
@@ -39,7 +89,6 @@ $make px4_sitl gazebo
   $ make px4_sitl gazebo_standard_vtol
   ```
 
-  
 
 ## 多机仿真
 
@@ -126,7 +175,7 @@ $make px4_sitl_default gazebo
 
 ```bash
 source /opt/ros/melodic/setup.bash
-source /home/alex/Desktop/PX4-Autopilot/ /home/alex/Desktop/PX4-Autopilot/Tools/setup_gazebo.bash  /home/alex/Desktop/PX4-Autopilot/build/px4_sitl_default
+source /home/alex/Desktop/PX4-Autopilot/Tools/setup_gazebo.bash /home/alex/Desktop/PX4-Autopilot/ /home/alex/Desktop/PX4-Autopilot/build/px4_sitl_default
 
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/Desktop/PX4-Autopilot
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/Desktop/PX4-Autopilot/Tools/sitl_gazebo
