@@ -550,3 +550,23 @@ Z:
 Z:
 ```
 
+
+
+
+
+## 驱动
+
+### CUAV  V5+
+
+CUAV V5+飞控设备驱动如下：
+
+| UART   | Device     | Port          |                        |
+| ------ | ---------- | ------------- | ---------------------- |
+| UART1  | /dev/ttyS0 | GPS           |                        |
+| USART2 | /dev/ttyS1 | TELEM1        |                        |
+| USART3 | /dev/ttyS2 | TELEM2        |                        |
+| UART4  | /dev/ttyS3 | TELEM4        |                        |
+| USART6 | /dev/ttyS5 | RC SBUS       |                        |
+| UART7  | /dev/ttyS5 | Debug Console | 调试串口，DSU7         |
+| UART8  | /dev/ttyS6 | PX4IO         | 用于连F103进行板间通信 |
+
