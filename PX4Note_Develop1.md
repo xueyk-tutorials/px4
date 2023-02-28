@@ -10,7 +10,38 @@ PX4开发笔记——二次开发（）
 
 
 
-### 烧写固件 (Flashing the board)
+## 烧写
+
+烧写固件 (Flashing the board)包括两种方式：
+
+### 下载器烧写
+
+使用J-Link或者STLink下载器进行下载，支持**SWD**下载方式。
+
+PX4提供了程序下载接口，对于CUAV V5+，是DSU7接口（包括了下载调试与串口7）。如下图：
+
+<img src="imgs\image-20230228150647720.png" alt="image-20230228150647720" style="zoom:60%;" />
+
+**JLink下载器**
+
+JLink下载器的10个引脚定义如下：
+
+
+
+![image-20230228150440814](imgs\image-20230228150440814.png)
+
+与飞控的下载调试口连接如下表：
+
+| 飞控Debug Port | 下载器J-Link Mini |
+| -------------- | ----------------- |
+| 1 (Vtref)      | 1                 |
+| 2 (Console TX) | -                 |
+| 3 (Console RX) | -                 |
+| 4 (SWDIO)      | 2                 |
+| 5 (SWDCLK)     | 4                 |
+| 6 (GND)        | 3 or 5            |
+
+### bootloader
 
 在相应的编译命令后添加**upload**即可。
 
