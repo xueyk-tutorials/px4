@@ -127,6 +127,30 @@ $ ./Tools/gazebo_sitl_multiple_run.sh -m iris -n 4
 | 3      | udp://:14542@127.0.0.1:14582 | 3/1            |
 | 4      | udp://:14543@127.0.0.1:14583 | 4/1            |
 
+## mavlink设置
+
+默认情况下，px4_sitl启动后仅仅与所在运行环境上的QGC等通信，假如px4仿真在本机的虚拟机或本机所在局域网内的其他计算机上运行，那么如何让仿真与本机上的QGC或控制程序通信呢？
+
+**修改启动脚本**
+
+打开文件`build\px4_sitl_default\etc\init.d-posix\px4-rc.mavlink`，修改如下：
+
+```shell
+mavlink start -x -u $udp_offboard_port_local -r 4000000 -f -m onboard -o $udp_offboard_port_remote -t 192.168.1.6 -p
+```
+
+**在shell中启动**
+
+```shell
+mavlink start -x -u 14220 -r 4000000 -f -m onboard -o 14580 -t 192.168.1.6 -p
+```
+
+**参数如下**
+
+- -t：本机IP
+- -u：本地端口
+- -o：远端端口
+
 ## gazebo仿真一些设置
 
 ### 地图设置
