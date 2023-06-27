@@ -597,7 +597,8 @@ CUAV V5+飞控设备驱动如下：
 | USART2 | /dev/ttyS1 | TELEM1        |                        |
 | USART3 | /dev/ttyS2 | TELEM2        |                        |
 | UART4  | /dev/ttyS3 | TELEM4        |                        |
-| USART6 | /dev/ttyS5 | RC SBUS       |                        |
+| USART6 | /dev/ttyS4 | RC SBUS       |                        |
 | UART7  | /dev/ttyS5 | Debug Console | 调试串口，DSU7         |
 | UART8  | /dev/ttyS6 | PX4IO         | 用于连F103进行板间通信 |
 
+> 由于启用了CAN，而UART5对应的引脚被CAN占用，故未引出UART5
