@@ -1,6 +1,57 @@
-
+# PX4飞控Mavlink模块
 
 以V1.12.3为例子。
+
+## 头文件结构
+
+### mavlink v2.0库
+
+以下是mavlink/v2.0文件夹内头文件的包含关系：
+
+```c++
+/* 标准mavlink头文件 */
+|-- "standard/mavlink.h"
+    |-- "version.h"
+    |-- "standard.h"
+        |-- "../protocol.h"
+        |-- "../common/common.h"
+        |-- "../mavlink_get_info.h"
+
+|-- "common/common.h"
+    |-- "../protocol.h"
+    |-- // enum定义如MAV_MODE、MAV_CMD等
+    |-- "./mavlink_msg_xxx.h"     //所有message定义头文件（common文件夹内）
+    |-- "../minimal/minimal.h"    //最基础message部分（minimal文件夹内）
+    	|-- "./mavlink_msg_heartbeat.h"
+    	|-- "./mavlink_msg_protocol_version.h"
+    |-- #define MAVLINK_MESSAGE_INFO   // 数组，包含所有消息ID宏
+    |-- #define MAVLINK_MESSAGE_NAMES  // 数组，包含所有消息对应的名称与结构体大小
+    |-- "../mavlink_get_info.h"
+    
+|-- "protocol.h"
+	|-- "mavlink_types.h"
+    |-- "mavlink_helpers.h"
+    	|-- "checksum.h"
+    	|-- "mavlink_types.h"
+    	|-- "mavlink_conversions.h" // 四元数、DCM、Euler互相转换
+    	|-- "mavlink_sha256.h"
+```
+
+### MAVLink模块
+
+#### 引入mavlink库
+
+通过头文件`mavlink_bridge_header.h`包含mavlink库，其包含的头文件如下：
+
+```c
+|-- "mavlink_bridge_header.h"
+	|-- "mavlink_types.h"
+    |-- "standard/mavlink.h"
+```
+
+#### 模块内
+
+
 
 ## 代码
 
