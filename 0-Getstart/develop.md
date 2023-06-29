@@ -20,7 +20,7 @@ PX4开发笔记——二次开发（）
 
 PX4提供了程序下载接口，对于CUAV V5+，是DSU7接口（包括了下载调试与串口7）。如下图：
 
-<img src="imgs\image-20230228150647720.png" alt="image-20230228150647720" style="zoom:60%;" />
+<img src="imgs\develop_dbg7.png" alt="image-20230228150647720" style="zoom:60%;" />
 
 **JLink下载器**
 
@@ -28,7 +28,7 @@ JLink下载器的10个引脚定义如下：
 
 
 
-![image-20230228150440814](imgs\image-20230228150440814.png)
+![image-20230228150440814](imgs\develop_jlink.png)
 
 与飞控的下载调试口连接如下表：
 
