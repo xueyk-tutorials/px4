@@ -144,6 +144,49 @@ mavlink start -x -u $udp_onboard_gimbal_port_local -r 400000 -m gimbal -o $udp_o
     	|-- "mavlink_sha256.h"
 ```
 
+另外，每一个xml文件都会生成一个对应的文件夹，并且都包含`mavlink.h`文件：
+
+```c
+#pragma once
+#ifndef MAVLINK_H
+#define MAVLINK_H
+
+#define MAVLINK_PRIMARY_XML_IDX 2
+
+#ifndef MAVLINK_STX
+#define MAVLINK_STX 253
+#endif
+
+#ifndef MAVLINK_ENDIAN
+#define MAVLINK_ENDIAN MAVLINK_LITTLE_ENDIAN
+#endif
+
+#ifndef MAVLINK_ALIGNED_FIELDS
+#define MAVLINK_ALIGNED_FIELDS 1
+#endif
+
+#ifndef MAVLINK_CRC_EXTRA
+#define MAVLINK_CRC_EXTRA 1
+#endif
+
+#ifndef MAVLINK_COMMAND_24BIT
+#define MAVLINK_COMMAND_24BIT 1
+#endif
+
+#include "version.h"
+/* 
+ * 只有这一行不一样，这里包含对应与该文件夹同名的.h文件，例如common文件夹就对应common.h文件。
+ */
+#include "common.h"            
+
+#endif // MAVLINK_H
+
+```
+
+
+
+也就是用户在引用mavlink时，只需要包含选择一个mavlink.h包含即可。
+
 ### MAVLink模块
 
 #### 引入mavlink库
@@ -471,13 +514,32 @@ mavlink_vasprintf()：通过ORB_ID(mavlink_log)发布。
 
 ### MavlinkStream类
 
-#### StreamListItem
+#### 发送
+
+成员函数`update(const hrt_abstime &t)`用于实现消息发送。
+
+虚函数`send()`，各子类重新该虚函数各自实现消息发送处理。
+
+### StreamListItem类
+
+这个类的核心是用来创建MavlinkStream子类实例的。该类成员包括了一个函数指针，该类实例化后这个指针指向一个具体MavlinkStream子类静态成员函数，后续通过调用这个函数指针即可生成MavlinkStream子类实例。
 
 定义了三个成员：
 
 - new_instance函数指针
 - name
 - id
+
+在`mavlink_messages.cpp`中定义了全局变量数组StreamListItem streams_list[]，存放了所有消息对应的StreamListItem，只要通过遍历就可以生成找到满足条件的StreamListItem并生成对应消息实例（MavlinkStream子类实例）。
+
+这里的条件是通过指定消息名（name）或消息ID（id），对应的两个函数为：
+
+```c
+MavlinkStream *create_mavlink_stream(const char *stream_name, Mavlink *mavlink){}
+MavlinkStream *create_mavlink_stream(const uint16_t msg_id, Mavlink *mavlink){}
+```
+
+
 
 ### Mavlink类
 
