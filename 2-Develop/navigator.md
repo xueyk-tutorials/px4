@@ -147,6 +147,31 @@ vehicle_command_s
 
 
 
+## mission_item_s
+
+### nav_cmd
+
+#### NAV_CMD_LOITER_TO_ALT
+
+功能：盘旋飞行至指定高度，只需要设置一次即可。
+
+逻辑处理：
+
+设置mission_item一次即可，后续在判断是否到达航点时，会判断无人机高度是否到达航点高度：
+
+1）如果没有到达航点高度，则判断是否到达水平位置
+
+- 如果没有到达水平位置，则继续保持当前高度飞至航点；
+- 如果到达水平位置，则将triplets高度设置为该航点高度，进而盘旋上升；
+
+2）如果已经到达航点高度，判断水平位置是否到达，如果到达则说明航点到达。
+
+代码讲解：
+
+在`mission_item_to_position_setpoint()`中，将triplets_current中的期望高度`sp->alt`设置为当前无人机高度，
+
+
+
 ### 各类模式
 
 #### takeoff
@@ -432,7 +457,9 @@ NavigatorMode *_navigation_mode_array[NAVIGATOR_MODE_ARRAY_SIZE];	/**< array of 
 
 
 
-## 专业词汇
+## 附录
+
+### 专业词汇
 
 course over ground：对地航向
 
