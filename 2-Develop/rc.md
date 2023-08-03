@@ -240,6 +240,14 @@ param show RC_MAP*
 
 
 
+## 虚拟摇杆
+
+QGC能够接入虚拟摇杆（例如游戏手柄），并且生成`MAVLINK_MSG_ID_MANUAL_CONTROL`消息，飞控mavlink接收到该消息后，可以发布`ORB_ID(manual_control_setpoint)`主题。
+
+如果希望通过manual_control_setpoint生成input_rc，可以设置参数`COM_RC_IN_MODE=2`，这样接入虚拟摇杆后，飞控可以发布`ORB_ID(input_rc)`。
+
+由于QGC只发送前四个通道（俯仰、横滚、油门、偏航），故转成了input_rc后也只有前面四个通道有效。
+
 ## sbus2协议
 
 ### 协议格式
