@@ -208,9 +208,11 @@ void RCUpdate::UpdateManualSetpoint(){
 
 因为无人机有不同的飞行模式，在不同飞行模式下遥控器控制的物理量不一样，在不同模式下，xyzr的含义也不一样。例如在手动模式下，控制的是姿态角，则x表示期望横滚角，而在位置模式下x表示机体坐标系下的x方向期望速度。
 
-## 遥控器校准
+## 遥控输入
 
-### 遥控器校准
+### 校准
+
+#### 遥控器校准
 
 设置param
 
@@ -220,7 +222,7 @@ RC_MAP????
 
 
 
-### joystick校准
+#### joystick校准
 
 （1）不会自动做任何param配置
 
@@ -230,27 +232,47 @@ RC_MAP????
 
 
 
-
-
-
-
 param set RC_MAP_PITCH 1
 
 param show RC_MAP*
 
 
 
-## 虚拟摇杆
+### 虚拟摇杆
 
 QGC能够接入虚拟摇杆（例如游戏手柄），并且生成`MAVLINK_MSG_ID_MANUAL_CONTROL`消息，飞控mavlink接收到该消息后，可以发布`ORB_ID(manual_control_setpoint)`主题。
 
-如果希望通过manual_control_setpoint生成input_rc，可以设置参数`COM_RC_IN_MODE=2`，这样接入虚拟摇杆后，飞控可以发布`ORB_ID(input_rc)`。
+如果希望通过manual_control_setpoint生成input_rc，可以设置参数`COM_RC_IN_MODE=2`，这样接入虚拟摇杆后，飞控可以发布`ORB_ID(input_rc)`。由于QGC只发送前四个通道（俯仰、横滚、油门、偏航），故转成了input_rc后也只有前面四个通道有效。
 
-由于QGC只发送前四个通道（俯仰、横滚、油门、偏航），故转成了input_rc后也只有前面四个通道有效。
 
-## sbus2协议
 
-### 协议格式
+mavlink_main.cpp的主函数会订阅vehicle_status，并对其rc_input_mode进行判断，如果为RC_IN_MODE_GENERATED则会通过manual_control_setpoint生成input_rc
+
+```c
+if (_vehicle_status_sub.updated()) {
+    
+set_generate_virtual_rc_input(vehicle_status.rc_input_mode == vehicle_status_s::RC_IN_MODE_GENERATED);
+}
+```
+
+
+
+## 相关参数
+
+| 参数             | 说明                                   | 取值                                                         |
+| ---------------- | -------------------------------------- | ------------------------------------------------------------ |
+| COM_FLTMODE1~6   | 设置飞行模式通道开关位置对应的飞行模式 | 1~16，该值减1就对应commander_state_s::MAIN_STATE_xxx<br>参考：<br>Commander.cpp/_flight_mode_slots<br>commander_state.h<br> |
+| RC_MAP_FLTMODE   | 设置飞行模式对应的通道                 | 根据遥控器通道数决定，一般为1~18                             |
+| RC_MAP_OFFB_SW   | 设置offboard模式对应的通道             | 根据遥控器通道数决定，一般为1~18                             |
+| RC_MAP_RETURN_SW | 设置返航对应的通道                     | 根据遥控器通道数决定，一般为1~18                             |
+
+
+
+## 附录
+
+### sbus2协议
+
+#### 协议格式
 
 ```c
 
@@ -291,9 +313,9 @@ QGC能够接入虚拟摇杆（例如游戏手柄），并且生成`MAVLINK_MSG_I
 
 
 
-## 典型SBus数据包示例
+#### 典型SBus数据包示例
 
-### Futaba RS3008S接收机
+Futaba RS3008S接收机
 
 ```shell
 [ 2023-04-17 14:25:10.983 ] :0ff6b31f5c020809b040021200042000010840000210800014
