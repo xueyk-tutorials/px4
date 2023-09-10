@@ -1,5 +1,11 @@
 # MAVLink
 
+## 概述
+
+序列化方式为小端字节；
+
+mavlink2协议有截断payload空字节的功能；
+
 ## MAVLink Basic
 
 ### Packet Format
@@ -34,13 +40,15 @@ Packet format定义了mavlink通信协议的数据包格式，打包与解析都
 | 4                | `uint8_t seq`              | Packet sequence number                                       | 0 - 255      | Used to detect packet loss. Components increment value for each message sent. |
 | 5                | `uint8_t sysid`            | System ID (sender)                                           | 1 - 255      | ID of *system* (vehicle) sending the message. Used to differentiate systems on network. Note that the broadcast address 0 may not be used in this field as it is an invalid *source* address. |
 | 6                | `uint8_t compid`           | Component ID (sender)                                        | 1 - 255      | ID of *component* sending the message. Used to differentiate *components* in a *system* (e.g. autopilot and a camera). Use appropriate values in [MAV_COMPONENT](https://mavlink.io/en/messages/common.html#MAV_COMPONENT). Note that the broadcast address `MAV_COMP_ID_ALL` may not be used in this field as it is an invalid *source* address. |
-| 7 to 9           | `uint32_t msgid:24`        | Message ID (low, middle, high bytes)                         | 0 - 16777215 | ID of *message type* in payload. Used to decode data back into message object. |
+| 7 to 9           | `uint24_t msgid:24`        | Message ID (low, middle, high bytes)                         | 0 - 16777215 | ID of *message type* in payload. Used to decode data back into message object. |
 | 10 to (n+10)     | `uint8_t payload[max 255]` | [Payload](https://mavlink.io/en/guide/serialization.html#payload) |              | Message data. Depends on message type (i.e. Message ID) and contents. |
 | (n+11) to (n+12) | `uint16_t checksum`        | [Checksum](https://mavlink.io/en/guide/serialization.html#checksum) (low byte, high byte) |              | X.25 CRC for message (excluding `magic` byte). Includes [CRC_EXTRA](https://mavlink.io/en/guide/serialization.html#crc_extra) byte. |
 | (n+12) to (n+26) | `uint8_t signature[13]`    | [Signature](https://mavlink.io/en/guide/message_signing.html) |              | (Optional) Signature to ensure the link is tamper-proof.     |
 
-- The minimum packet length is 11 bytes for acknowledgment packets without payload.
-- The maximum packet length is 279 bytes for a signed message that uses the whole payload.
+
+
+- 最小包长度为12字节，例如不包含payload的acknowledgment消息。
+- 最大包长度为280字节，这时包括了签名信息，并且payload是满字节（即255个字节）。
 
 ### Payload Format
 
@@ -402,4 +410,78 @@ MAVLink协议没有规定具体的模式对应的参数值，各飞控需要自�
 | ALTCTL               | 根据FCU的sys_id确定 | 129       | 131072                    |
 | OFFBOARD             | 根据FCU的sys_id确定 | 129       | 393216         (0x60000)  |
 |                      |                     |           |                           |
+
+
+
+
+
+## 截断功能
+
+### 说明
+
+对于payload是变长的消息来说（例如gps_inject_data，其payload长度为113），有时其payload只有少量字节，如果每次还按照最大长度传输，就非常占用带宽。
+
+mavlin v2提供了payload截断功能，如果
+
+### 源码分析
+
+获取消息结构体之后，使用mavlink_msg_to_send_buffer函数进行序列化
+
+![image-20230910140128702](imgs/image-20230910140128702.png)
+
+
+
+通过查看`_mav_trim_payload()`函数可知，其确实将payload结尾是0x00的空字节去掉了。
+
+```c
+/**
+ * @brief Trim payload of any trailing zero-populated bytes (MAVLink 2 only).
+ *
+ * @param payload Serialised payload buffer.
+ * @param length Length of full-width payload buffer.
+ * @return Length of payload after zero-filled bytes are trimmed.
+ */
+MAVLINK_HELPER uint8_t _mav_trim_payload(const char *payload, uint8_t length)
+{
+	while (length > 1 && payload[length-1] == 0) {
+		length--;
+	}
+	return length;
+}
+```
+
+### 使用注意
+
+每次调用消息的pack函数前，将payload的buffer清空置0。
+
+### 测试
+
+```c
+void mavlink_test() {
+    uint8_t buf_rtca[180];
+    uint8_t buffer_send1[256];
+    uint8_t buffer_send2[256];
+
+    mavlink_message_t msg_send1{}, msg_send2{}, msg_recv1{};
+    rt_memset(&msg_send1, 0x00, sizeof(msg_send1));
+    rt_memset(&msg_send2, 0x00, sizeof(msg_send2));
+
+    mavlink_gps_inject_data_t data_send1{}, data_send2{}, data_recv{};
+    rt_memset(data_send1.data, 0x00, sizeof(data_send1.data));
+    rt_memset(data_send2.data, 0x00, sizeof(data_send2.data));
+
+    for (int i = 0; i < 8;++i) {
+        data_send1.data[i] = i;
+        buf_rtca[i]       = i;
+    }
+    mavlink_msg_gps_inject_data_encode_chan(1, 1, 0, &msg_send1, &data_send1);
+    msg_send1.magic = MAVLINK_STX;                         /// 强制使用mavlink v2
+    mavlink_msg_to_send_buffer(buffer_send1, &msg_send1);  /// 序列化后buffer[1]=payload_len=11
+
+    mavlink_msg_gps_inject_data_pack_chan(1, 1, 0, &msg_send2, 10, 10, 8, buf_rtca);
+    msg_send2.magic = MAVLINK_STX_MAVLINK1;                /// 强制使用mavlink v1
+    mavlink_msg_to_send_buffer(buffer_send2, &msg_send2);  /// 序列化后buffer[1]=payload_len=113
+    
+}
+```
 

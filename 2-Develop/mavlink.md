@@ -473,6 +473,51 @@ mavlink模块可以创建多个实例，每个实例可以认为是一路消息�
 >
 > 在实际代码中，写入数据不论那种情况，都是调用一次写函数完成！而读数据时，如果数据分块存放，则需要调用两次读函数完成数据读取操作。
 
+## MAVLink1与MAVLink2协议切换
+
+启动飞控后，默认使用MAVLink1，如果连接了地面站且地面站使用的MAVLink2，则发送切换为MAVLink2协议。
+
+### 初始化
+
+Mavlink创建实例，在构造函数中调用Mavlink::mavlink_update_parameters()，根据参数MAV_PROTO_VER的值，再调用set_proto_version(proto_ver)函数，设置get_status()->flags（即`_mavlink_status`）的值，根据代码，这里会通过
+
+```c
+get_status()->flags |= MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
+```
+
+使get_status()->flags=2。
+
+### 切换逻辑
+
+在mavlink_receiver.cpp，当接收到地面站数据后，则通过set_proto_version()函数设置协议版本切换为V2。
+
+```c
+/* check if we received version 2 and request a switch. */
+if (!(_mavlink->get_status()->flags & MAVLINK_STATUS_FLAG_IN_MAVLINK1)) {
+    /* this will only switch to proto version 2 if allowed in settings */
+    _mavlink->set_proto_version(2);
+}
+```
+
+
+
+### 相关参数
+
+默认MAV_PROTO_VER=0，也就是协议版本根据地面站版本来切换。
+
+```shell
+/**
+ * MAVLink protocol version
+ * @group MAVLink
+ * @value 0 Default to 1, switch to 2 if GCS sends version 2
+ * @value 1 Always use version 1
+ * @value 2 Always use version 2
+ */
+PARAM_DEFINE_INT32(MAV_PROTO_VER, 0, 0);
+```
+
+
+
 ## 配置
 
 ### datarate
