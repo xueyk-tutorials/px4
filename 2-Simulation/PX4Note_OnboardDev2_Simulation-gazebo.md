@@ -68,7 +68,7 @@ $ bash ./Tools/setup/ubuntu.sh --no-sim-tools
 
 QGC（QGroundControl）是PX4飞控的地面控制站。
 
-参考: https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html
+安装请参考: https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html
 
 ## 单机仿真
 
@@ -89,6 +89,13 @@ $make px4_sitl gazebo
   $ make px4_sitl gazebo_standard_vtol
   ```
 
+- 车辆
+
+  ```shell
+  $ make px4_sitl gazebo_rover
+  ```
+
+  
 
 ## 多机仿真
 
@@ -127,6 +134,18 @@ $ ./Tools/gazebo_sitl_multiple_run.sh -m iris -n 4
 | 3      | udp://:14542@127.0.0.1:14582 | 3/1            |
 | 4      | udp://:14543@127.0.0.1:14583 | 4/1            |
 
+### 选择机架
+
+在ROMFS/px4fmu_common/init.d-posix/airframes中，定义了很多不同的机架文件，统一命令格式为：idx_name，其中idx是使用数字表示的机架编号，name是机架名称。我们可以通过查看机架名称作为命令参数，例如垂起无人机机架文件是1140_standard_vtol，那么可以通过如下命令启动垂起机型的多极仿真：
+
+```shell
+$ ./Tools/gazebo_sitl_multiple_run.sh -m standard_vtol -n 4
+```
+
+> 注意：
+>
+> 但由于gazebo模型库的限制，并不是所有机型都有，当前支持的仿真机架有[iris plane standard_vtol rover r1_rover typhoon_h480]
+
 ## mavlink设置
 
 默认情况下，px4_sitl启动后仅仅与所在运行环境上的QGC等通信，假如px4仿真在本机的虚拟机或本机所在局域网内的其他计算机上运行，那么如何让仿真与本机上的QGC或控制程序通信呢？
@@ -150,6 +169,27 @@ mavlink start -x -u 14220 -r 4000000 -f -m onboard -o 14580 -t 192.168.1.6 -p
 - -t：本机IP
 - -u：本地端口
 - -o：远端端口
+
+## QGC连接
+
+启动PX4 gazebo仿真后，可以根据终端窗口打印出的相关信息确定连接配置。例如启动仿真输出的相关信息如下：
+
+```shell
+[Msg] Waiting for master.
+[Msg] Connected to gazebo master @ http://127.0.0.1:11345
+[Msg] Publicized address: 192.168.215.89
+
+
+INFO  [simulator] Waiting for simulator to accept connection on TCP port 4560
+INFO  [simulator] Simulator connected on TCP port 4560.
+
+INFO  [mavlink] mode: Normal, data rate: 4000000 B/s on udp port 18570 remote port 14550
+INFO  [mavlink] mode: Onboard, data rate: 4000000 B/s on udp port 14580 remote port 14540
+INFO  [mavlink] mode: Onboard, data rate: 4000 B/s on udp port 14280 remote port 14030
+INFO  [mavlink] mode: Gimbal, data rate: 400000 B/s on udp port 13030 remote port 13280
+```
+
+根据以上信息说明目的地址为**192.168.215.89**，启动了4路mavlink连接，一路Normal一般用于连接QGC，两路Onboard一般用于机载计算机连接，一路Gimbal一般用于吊舱连接。
 
 ## gazebo仿真一些设置
 
