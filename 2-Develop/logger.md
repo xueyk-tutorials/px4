@@ -344,11 +344,66 @@ hrt_call_every()
 
 ### log_writer_file.cpp
 
-##### 类LogWriterFile
+#### 类LogWriterFile
 
 创建写线程，定周期将放在缓存中的数据写入SD卡，当前周期为1s。
 
 
+
+#### buffer大小
+
+LogWriterFile类实例化时创建两个buffer，一个是full buffer，一个是mission buffer。
+
+- 其中mission buffer大小为300，在LogWriterFile类构造函数是给定的；
+
+- 其中full buffer大小在Logger类构造函数中设置为12*1024，通过层层调用，Logger()->LogWriter()->LogWriterFile()，将改参数传递至LogWriterFile()构造函数内。
+
+  LogFileBuffer::start_log()函数中，通过malloc()为full buffer分配内存空间。
+
+#### 写线程
+
+LogWriterFile类创建写线程后，会进入run()函数一直出来写操作。
+
+
+
+##### 等待开始
+
+写线程开始运行时，首先需要判断是否可以开始写入操作，如果没有任何数据则肯定不需要进入写入操作步骤，为了节省CPU资源，开始进入写线程会调用pthread_cond_wait，这样写线程就会阻塞，直到其他线程调用pthread_cond_broadcast来通知。
+
+```c
+void LogWriterFile::run() {
+    while (!_exit_thread) {
+		while (!_exit_thread) {
+            bool start = false;
+            pthread_mutex_lock(&_mtx);
+            /**
+             * pthread_cond_wait会阻塞等待（不会占用CPU资源），直到调用pthread_cond_broadcast函数唤醒本线程。
+             */
+            pthread_cond_wait(&_cv, &_mtx);
+            start = _buffers[0]._should_run || _buffers[1]._should_run;
+            pthread_mutex_unlock(&_mtx);
+
+            if (start) {
+                break;
+            }
+        }
+        //
+        //
+    }
+}
+```
+
+
+
+##### 通知
+
+LogWriterFile类提供了通知函数notify()，用于logger主线程调用，通知写线程进行文件写操作。
+
+```c
+    void notify() {
+        pthread_cond_broadcast(&_cv);
+    }
+```
 
 
 
