@@ -145,6 +145,28 @@ You can also access the shell in a terminal using the **mavlink_shell.py** scrip
 
 Use `mavlink_shell.py -h` to get a description of all available arguments.
 
+### 终端命令
+
+#### ORB相关
+
+通过输入`uorb help`命令查看使用帮助
+
+```shell
+Usage: uorb <command> [arguments...]
+ Commands:
+
+   status        Print topic statistics
+
+   top           Monitor topic publication rates
+     [-a]        print all instead of only currently publishing topics with subscribers
+     [-1]        run only once, then exit
+     [<filter1> [<filter2>]] topic(s) to match (implies -a)
+```
+
+示例
+
+- uorb top vehicle_local_position
+
 
 
 # PX4系统架构
