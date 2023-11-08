@@ -258,7 +258,7 @@ static inline void mavlink_msg_heartbeat_decode(const mavlink_message_t* msg, ma
 首先下载[mavlink](https://github.com/mavlink/mavlink/)仓库代码，MAVLink仓库代码提供了GUI或者命令行两种方式生成不同语言的”Header"，最方便的就是运行GUI，可以通过如下命令行：
 
 ```
-$python mavgenerate.py
+$python2 mavgenerate.py
 ```
 
 接下来根据GUI界面提示即可，根据你的编程语言选择生成不同语言版本的库。
@@ -410,6 +410,14 @@ MAVLink协议没有规定具体的模式对应的参数值，各飞控需要自�
 | ALTCTL               | 根据FCU的sys_id确定 | 129       | 131072                    |
 | OFFBOARD             | 根据FCU的sys_id确定 | 129       | 393216         (0x60000)  |
 |                      |                     |           |                           |
+
+
+
+### 单位
+
+```shell
+{'s', 'ds', 'cs', 'ms', 'us', 'Hz', 'MHz', 'km', 'dam', 'm', 'm/s', 'm/s/s', 'm/s*5', 'dm', 'dm/s', 'cm', 'cm^2', 'cm/s', 'mm', 'mm/s', 'mm/h', 'K', 'degC', 'cdegC', 'rad', 'rad/s', 'mrad/s', 'deg', 'deg/2', 'deg/s', 'cdeg', 'cdeg/s', 'degE5', 'degE7', 'rpm', 'V', 'cV', 'mV', 'A', 'cA', 'mA', 'mAh', 'mT', 'gauss', 'mgauss', 'hJ', 'W', 'mG', 'g', 'Pa', 'hPa', 'kPa', 'mbar', '%', 'd%', 'c%', 'dB', 'dBm', 'KiB', 'KiB/s', 'MiB', 'MiB/s', 'bytes', 'bytes/s', 'bits/s', 'pix', 'dpix', 'g/min'}.
+```
 
 
 
