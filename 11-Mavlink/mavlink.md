@@ -47,7 +47,7 @@ Packet format定义了mavlink通信协议的数据包格式，打包与解析都
 
 
 
-- 最小包长度为12字节，例如不包含payload的acknowledgment消息。
+- 最小包长度为12字节，这时payload为空，且不包含签名，例如acknowledgment消息。
 - 最大包长度为280字节，这时包括了签名信息，并且payload是满字节（即255个字节）。
 
 ### Payload Format
