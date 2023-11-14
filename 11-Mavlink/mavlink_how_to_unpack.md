@@ -32,8 +32,6 @@
 
 ​		每路通道对应的就是一个通信实例，对应一组解析“缓存”。
 
-
-
 ## 解析过程
 
 ### 解析基本消息
@@ -95,10 +93,6 @@ USER ->> PC : 参数：<br>uint8_t chan, <br> uint8_t c, <br>mavlink_message_t* 
 PC ->> FC : 参数：<br>uint8_t chan, <br> uint8_t c, <br>mavlink_message_t* r_message, <br>mavlink_status_t* r_mavlink_status<br>
 FC ->> FCB :参数：<br>mavlink_message_t* rxmsg, <br> mavlink_status_t* status, <br>uint8_t c, <br>mavlink_message_t* r_message, <br>mavlink_status_t* r_mavlink_status<br>
 ```
-
-
-
-
 
 
 
