@@ -102,8 +102,6 @@ Waiting to discover system...
 
 ## 使用
 
-
-
 ### 无人机连接
 
 | Connection | URL Format                   |
@@ -135,8 +133,6 @@ if (connection_result != ConnectionResult::Success) {
     return;
 }
 ```
-
-
 
 MAVSDK作为客户端
 
@@ -174,10 +170,6 @@ https://mavsdk.mavlink.io/main/en/cpp/api_reference/classmavsdk_1_1_telemetry.ht
 Allow users to get vehicle telemetry and state information (e.g. battery, GPS, RC connection, flight mode etc.) and set telemetry update rates.
 
 允许用户获取飞行器遥测和状态信息（例如电池、GPS、RC 连接、飞行模式等）并设置遥测更新率。
-
-
-
-
 
 
 
