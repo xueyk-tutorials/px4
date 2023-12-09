@@ -47,7 +47,7 @@ Packet format定义了mavlink通信协议的数据包格式，打包与解析都
 
 
 
-- 最小包长度为12字节，例如不包含payload的acknowledgment消息。
+- 最小包长度为12字节，这时payload为空，且不包含签名，例如acknowledgment消息。
 - 最大包长度为280字节，这时包括了签名信息，并且payload是满字节（即255个字节）。
 
 ### Payload Format
@@ -257,11 +257,19 @@ static inline void mavlink_msg_heartbeat_decode(const mavlink_message_t* msg, ma
 
 首先下载[mavlink](https://github.com/mavlink/mavlink/)仓库代码，MAVLink仓库代码提供了GUI或者命令行两种方式生成不同语言的”Header"，最方便的就是运行GUI，可以通过如下命令行：
 
-```
-$python mavgenerate.py
+```shell
+$ python2 mavgenerate.py
 ```
 
 接下来根据GUI界面提示即可，根据你的编程语言选择生成不同语言版本的库。
+
+或者直接运行如下命令行：
+
+```shell
+$ python2 pymavlink/tools/mavgen.py --lang C --wire-protocol 2.0  --output generated message_definitions/v1.0/common.xml
+```
+
+
 
 ### Demo in C
 
@@ -413,75 +421,13 @@ MAVLink协议没有规定具体的模式对应的参数值，各飞控需要自�
 
 
 
+### 单位
 
-
-## 截断功能
-
-### 说明
-
-对于payload是变长的消息来说（例如gps_inject_data，其payload长度为113），有时其payload只有少量字节，如果每次还按照最大长度传输，就非常占用带宽。
-
-mavlin v2提供了payload截断功能，如果
-
-### 源码分析
-
-获取消息结构体之后，使用mavlink_msg_to_send_buffer函数进行序列化
-
-![image-20230910140128702](imgs/image-20230910140128702.png)
-
-
-
-通过查看`_mav_trim_payload()`函数可知，其确实将payload结尾是0x00的空字节去掉了。
-
-```c
-/**
- * @brief Trim payload of any trailing zero-populated bytes (MAVLink 2 only).
- *
- * @param payload Serialised payload buffer.
- * @param length Length of full-width payload buffer.
- * @return Length of payload after zero-filled bytes are trimmed.
- */
-MAVLINK_HELPER uint8_t _mav_trim_payload(const char *payload, uint8_t length)
-{
-	while (length > 1 && payload[length-1] == 0) {
-		length--;
-	}
-	return length;
-}
+```shell
+{'s', 'ds', 'cs', 'ms', 'us', 'Hz', 'MHz', 'km', 'dam', 'm', 'm/s', 'm/s/s', 'm/s*5', 'dm', 'dm/s', 'cm', 'cm^2', 'cm/s', 'mm', 'mm/s', 'mm/h', 'K', 'degC', 'cdegC', 'rad', 'rad/s', 'mrad/s', 'deg', 'deg/2', 'deg/s', 'cdeg', 'cdeg/s', 'degE5', 'degE7', 'rpm', 'V', 'cV', 'mV', 'A', 'cA', 'mA', 'mAh', 'mT', 'gauss', 'mgauss', 'hJ', 'W', 'mG', 'g', 'Pa', 'hPa', 'kPa', 'mbar', '%', 'd%', 'c%', 'dB', 'dBm', 'KiB', 'KiB/s', 'MiB', 'MiB/s', 'bytes', 'bytes/s', 'bits/s', 'pix', 'dpix', 'g/min'}.
 ```
 
-### 使用注意
 
-每次调用消息的pack函数前，将payload的buffer清空置0。
 
-### 测试
 
-```c
-void mavlink_test() {
-    uint8_t buf_rtca[180];
-    uint8_t buffer_send1[256];
-    uint8_t buffer_send2[256];
-
-    mavlink_message_t msg_send1{}, msg_send2{}, msg_recv1{};
-    rt_memset(&msg_send1, 0x00, sizeof(msg_send1));
-    rt_memset(&msg_send2, 0x00, sizeof(msg_send2));
-
-    mavlink_gps_inject_data_t data_send1{}, data_send2{}, data_recv{};
-    rt_memset(data_send1.data, 0x00, sizeof(data_send1.data));
-    rt_memset(data_send2.data, 0x00, sizeof(data_send2.data));
-
-    for (int i = 0; i < 8;++i) {
-        data_send1.data[i] = i;
-        buf_rtca[i]       = i;
-    }
-    mavlink_msg_gps_inject_data_encode_chan(1, 1, 0, &msg_send1, &data_send1);
-    msg_send1.magic = MAVLINK_STX;                         /// 强制使用mavlink v2
-    mavlink_msg_to_send_buffer(buffer_send1, &msg_send1);  /// 序列化后buffer[1]=payload_len=11
-
-    mavlink_msg_gps_inject_data_pack_chan(1, 1, 0, &msg_send2, 10, 10, 8, buf_rtca);
-    msg_send2.magic = MAVLINK_STX_MAVLINK1;                /// 强制使用mavlink v1
-    mavlink_msg_to_send_buffer(buffer_send2, &msg_send2);  /// 序列化后buffer[1]=payload_len=113
-    
-}
-```
 
