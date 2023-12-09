@@ -1,4 +1,4 @@
-# 构建过程解析
+# MAVSDK（三）构建过程解析
 
 ## 说明
 
@@ -142,7 +142,7 @@ configure_file(mavlink_include.h.in mavlink_include.h)
 - MAVLINK_DIALECT：指定用户dialect，默认MAVLINK_DIALECT=common，也就是使用common/mavlink.h头文件；
 - MAVLINK_HEADERS：指定mavlink头文件所在路径与MAVSDK工程目录的相对路径，例如`-DMAVLINK_HEADERS=../mavlink-headers`表示头文件所在文件夹mavlink-headers是与MAVSDK文件夹同级。
 
-```shell
+```c
 $ cmake -Bbuild/default -DMAVLINK_DIALECT=mydialect -DMAVLINK_HEADERS=../mavlink-headers -H.
 ```
 
@@ -206,25 +206,24 @@ set(DEPS_INSTALL_PATH "${DEPS_BUILD_PATH}/install" CACHE PATH "Install path for 
 
    再根据为bash命令传入的参数，这个线程启动后就相当于运行了如下命令：
 
-   ```shell
+   ```cmake
    $ cd third_party/jsoncpp
-   $ cmake -DCMAKE_INSTALL_PREFIX:PATH=mavsdk/build/default/third_party/install \
+   $ cmake -DCMAKE_INSTALL_PREFIX:PATH=mavsdk/build/default/third_party/install \ 
    		-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH} \
-   		
    		mavsdk/third_party/jsoncpp
    ```
-
+   
    > 注意：上面cmake后的编译参数没有写完，仅做为理解参考。
-
+   
    其中cmake命令最后一个参数`mavsdk/third_party/jsoncpp`内包含CMakeLists.txt，这样就可以构建`third_party/jsoncpp/CMakeLists.txt`了。
-
+   
    **第二个**`execute_process()`函数也是启动了一个cmake编译线程，参数与第一个一样，只不过是传入了`--build`命令，也就是相当于`make`命令。
-
-   ```shell
+   
+   ```cmake
    $ cd third_party/jsoncpp
    $ cmake --build .
    ```
-
+   
 3. 下载依赖库
 
    **以编译jsoncpp为例**，构建`third_party/jsoncpp/CMakeLists.txt`时，该CMakeLists.txt通过ExternalProject_Add()函数指定依赖库下载地址。由于步骤2启动编译线程时指定的工作路径为`npsdk/build/default/third_party/jsoncpp`目录，故依赖库源码也会下载到该目录下。

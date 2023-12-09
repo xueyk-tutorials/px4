@@ -1,10 +1,24 @@
-# MAVSDK
+# MAVSDK（一）简介
 
-CPP版本文档：https://mavsdk.mavlink.io/main/en/cpp/
+## 简介
 
-MAVSDK包括了library和server，如果我们使用的是C++，那么可以不用server，如果是使用其他语言如python，则python相关安装包中包括了server，用于跟MAVSDK C++建立gRPC通信。
+​		MAVSDK是PX4开源团队贡献的基于mavlink通信协议的用于无人机应用开发的SDK，其可以部署在Windows、Linux、Android等多种平台，并且支持多种语言如c/c++、python、Java等。
 
+​		在官网你会看到不同语言的MAVSDK，对应新手来说可能有点懵，其实MAVSDK的核心是MAVSDK-C++，这个版本实现了包括接口驱动（串口、udp等）、mavlink通信、各种交互逻辑处理，并且创建了server，建立gRPC通信，其他不同的语言版本都是只实现了gRPC通信接口而已。
+
+​		下图可能会更清晰一些：
+
+![mavsdk_tools](imgs/mavsdk_tools.svg)
+
+> MAVSDK包括了library和server，如果我们使用的是C++，那么可以不用server，如果是使用其他语言（如python等）必须使用server，用于跟各种语言的客户端建立gRPC通信。
+>
 > 除 C++ 之外的 MAVSDK 语言包装器使用 gRPC 连接到 MAVSDK C++ 核心。这个围绕 MAVSDK C++ 库的 gRPC 服务器称为 mavsdk_server（过去称为后端）。
+
+
+
+- 官网：https://mavsdk.mavlink.io/main/en/index.html
+
+- mavsdk文档-cpp：https://mavsdk.mavlink.io/main/en/cpp/
 
 ## 环境配置
 
@@ -170,102 +184,5 @@ https://mavsdk.mavlink.io/main/en/cpp/api_reference/classmavsdk_1_1_telemetry.ht
 Allow users to get vehicle telemetry and state information (e.g. battery, GPS, RC connection, flight mode etc.) and set telemetry update rates.
 
 允许用户获取飞行器遥测和状态信息（例如电池、GPS、RC 连接、飞行模式等）并设置遥测更新率。
-
-
-
-## 订阅姿态角
-
-[struct EulerAngle · MAVSDK Guide (mavlink.io)](https://mavsdk.mavlink.io/main/en/cpp/api_reference/structmavsdk_1_1_telemetry_1_1_euler_angle.html)
-
-
-
-### ROS2
-
-头文件
-
-```c++
-#include <iostream>
-#include <string>
-#include <chrono>
-#include <cmath>
-#include <future>
-#include <thread>
-
-#include <mavsdk/mavsdk.h>
-#include <mavsdk/plugins/telemetry/telemetry.h>
-
-#include "rclcpp/rclcpp.hpp"
-
-class Controller : public rclcpp::Node
-{
-public:
-    Controller(std::string name="Controller");
-
-    std::shared_ptr<mavsdk::System> get_system(mavsdk::Mavsdk& mavsdk);
-    
-private:
-    mavsdk::Mavsdk mavsdk_px4;
-    std::shared_ptr<mavsdk::System> system_px4fcu;
-    std::shared_ptr<mavsdk::Telemetry> telemetry;
-    // mavsdk::Telemetry::EulerAngleHandle handle_euler_angle;
-    
-    // 使用一个成员函数用于保存接收的欧拉角
-    mavsdk::Telemetry::EulerAngle euler_angle;
-    // 声明一个回调函数，用于接收欧拉角
-    void callback_mavsdk_euler_angle(const mavsdk::Telemetry::EulerAngle &euler_angle);
-};
-```
-
-源文件
-
-```c++
-#include "px4_ctrl/controller.hpp"
-
-using namespace std;
-using namespace std::chrono_literals;
-using namespace mavsdk;
-
-Controller::Controller(std::string name) : rclcpp::Node(name)
-{
-    RCLCPP_INFO(this->get_logger(), "Node Controller");
-
-    mavsdk::ConnectionResult connection_result = mavsdk_px4.add_any_connection("serial:////dev/ttyUSB0:57600");
-    if (connection_result != mavsdk::ConnectionResult::Success) {
-        std::cerr << "Connection failed: " << connection_result << '\n';
-        RCLCPP_INFO(this->get_logger(), "Connection failed");
-    }
-    else {
-        system_px4fcu = get_system(mavsdk_px4);
-        if (!system_px4fcu) {
-            RCLCPP_INFO(this->get_logger(), "system error");
-        }
-    }
-    RCLCPP_INFO(this->get_logger(), "Success connected with PX4 fcu");
-	
-    /** 定义telemetry **/
-    telemetry = std::make_shared<mavsdk::Telemetry>(system_px4fcu);
-    /** 方法一：使用lambda函数绑定 **/
-    
-    // telemetry->subscribe_attitude_euler([this](mavsdk::Telemetry::EulerAngle euler) {
-    //     euler_angle = euler;
-    //     std::cout << "EulerAngle callback" << std::endl;
-    //     RCLCPP_INFO(this->get_logger(), "EulerAngle callback");
-    // });
-
-	/** 方法二：使用成员函数绑定 **/
-    telemetry->subscribe_attitude_euler(std::bind(&Controller::callback_mavsdk_euler_angle, this, std::placeholders::_1));
-}
-
-void Controller::callback_mavsdk_euler_angle(const mavsdk::Telemetry::EulerAngle &euler_angle)
-{
-    this->euler_angle = euler_angle;
-    RCLCPP_INFO(this->get_logger(), "EulerAngle callback");
-    RCLCPP_INFO(this->get_logger(), "roll=%f, pitch=%f, yaw=%f", euler_angle.roll_deg, 
-                                                                euler_angle.pitch_deg,
-                                                                euler_angle.yaw_deg);
-}
-
-```
-
 
 
