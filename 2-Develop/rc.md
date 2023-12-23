@@ -244,11 +244,13 @@ QGC能够接入虚拟摇杆（例如游戏手柄），并且生成`MAVLINK_MSG_I
 
 如果希望通过manual_control_setpoint生成input_rc，可以设置参数`COM_RC_IN_MODE=2`，这样接入虚拟摇杆后，飞控可以发布`ORB_ID(input_rc)`。由于QGC只发送前四个通道（俯仰、横滚、油门、偏航），故转成了input_rc后也只有前面四个通道有效。
 
+> 地面站不会发送游戏手柄按钮开关量，而是需要用户将游戏手柄的各按钮映射成commander指令，这样按钮被按下就会触发一条command_long消息的发送。
+
 
 
 mavlink_main.cpp的主函数会订阅vehicle_status，并对其rc_input_mode进行判断，如果为RC_IN_MODE_GENERATED则会通过manual_control_setpoint生成input_rc
 
-```c
+```c++
 if (_vehicle_status_sub.updated()) {
     
 set_generate_virtual_rc_input(vehicle_status.rc_input_mode == vehicle_status_s::RC_IN_MODE_GENERATED);
