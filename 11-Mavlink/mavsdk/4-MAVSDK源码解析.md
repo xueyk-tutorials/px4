@@ -12,7 +12,7 @@ SystemImpl构造函数会创建MavsdkImpl实例作为_parent；
 
 
 
-NPsdk会创建MavsdkImpl实例
+Mavsdk会创建MavsdkImpl实例
 
 System会创建SystemImpl实例
 
@@ -73,21 +73,21 @@ System会创建SystemImpl实例
 
 ​		用户可以使用SDK获取飞控数据、给飞控发送指令，这些操作都是异步的，故需要传入用户回调函数。当”条件满足要求“时（如接收到飞控数据）由SDK自动执行这些用户的回调函数。例如使用Telemetry插件获取飞控位置数据时，往往需要提供回调函数，当接收到飞控位置数据就会调用该回调函数。
 
-- 队列：SafeQueue\<UserCallback\> **NPsdk**::**_user_callback_queue**
+- 队列：SafeQueue\<UserCallback\> **Mavsdk**::**_user_callback_queue**
 
-- 消费者线程：NPsdk::_process_user_callbacks_thread
+  这是FIFO队列，从尾部放入，头部弹出。
 
-  从队列取UserCallback，并运行回调函数。
+- 消费者线程：Mavsdk::_process_user_callbacks_thread
 
-- 生产者线程：向队列存UserCallback
+  从队列头部取UserCallback（弹出），并运行回调函数。
 
+- 生产者线程：一般主要是用户线程，向队列存UserCallback
 
+![image-20231223225857882](imgs/image-20231223225857882.png)
 
 ##### 工作队列：超时处理
 
 ##### 工作队列：commander命令发送
-
-
 
 
 
@@ -99,7 +99,7 @@ System会创建SystemImpl实例
 
 
 
-## 初始化
+## 初始化工作
 
 ### 添加新的system
 
@@ -447,7 +447,7 @@ MAVLinkParameters类实现参数操作，get_param_int_async()函数用于获取
 >
 > MavsdkImpl::work_thread()会周期性调用timeout_handler.run_once()处理超时；
 >
-> 由`NPsdk::DEFAULT_TIMEOUT_S`定义默认超时时间；
+> 由`Mavsdk::DEFAULT_TIMEOUT_S`定义默认超时时间；
 
 ### 代码说明
 
@@ -564,11 +564,7 @@ SystemImpl::set_msg_rate_async()函数设置消息id、频率、回调函数、c
 
 
 
-## TelemetryImpl
 
-### check_calibration
-
-检查校准
 
 
 
