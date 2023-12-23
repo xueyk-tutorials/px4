@@ -107,6 +107,18 @@ PX4的Tools目录下提供了多机仿真启动脚本**gazebo_sitl_multiple_run.
 
 `.Tools/gazebo_sitl_multiple_run.sh [-m <model>] [-n <number_of_vehicles>] [-w <world>] [-s <script>] [-t <target>] [-l <label>]`
 
+- -m：选择无人机类型
+
+  默认m=iris。启动后会根据无人机类型加载gazebo模型，故必须保证对应模型存在，否则出错。目前支持的模型有iris、plane、standard_vtol、 rover、r1_rover、typhoon_h480。
+
+- -n：设置无人机数量
+
+  默认n=2。
+
+- -w：设置gazebo仿真世界模型
+
+
+
 ### 更改脚本权限
 
 一般这个脚本没有sudo权限，请使用如下命令赋予该脚本启动权限：
@@ -120,19 +132,24 @@ $ sudo chmod +777 ./Tools/gazebo_sitl_multiple_run.sh
 
 ### 启动多机仿真
 
+输入如下命令
+
 ```shell
 $ cd PX4-Autopilot
 $ ./Tools/gazebo_sitl_multiple_run.sh -m iris -n 4
 ```
 
-这个会启动gazebo仿真窗口并且具备四个无人机，要对这四个无人机进行连接，请注意如下信息：
+这个会启动gazebo仿真窗口并且具备四个无人机，每个无人机都会启动用于地面站gcs连接的mavlink和用于offboard连接的mavlink，默认IP和端口如下：
 
-| 无人机 | offboard UDP                 | sys_id/comp_id |
-| ------ | ---------------------------- | -------------- |
-| 1      | udp://:14540@127.0.0.1:14580 | 1/1            |
-| 2      | udp://:14541@127.0.0.1:14581 | 2/1            |
-| 3      | udp://:14542@127.0.0.1:14582 | 3/1            |
-| 4      | udp://:14543@127.0.0.1:14583 | 4/1            |
+| 无人机 | offboard UDP                 | gcs UDP                      | sys_id/comp_id |
+| ------ | ---------------------------- | ---------------------------- | -------------- |
+| 1      | udp://:14540@127.0.0.1:14580 | udp://:14550@127.0.0.1:18570 | 1/1            |
+| 2      | udp://:14541@127.0.0.1:14581 | udp://:14550@127.0.0.1:18571 | 2/1            |
+| 3      | udp://:14542@127.0.0.1:14582 | udp://:14550@127.0.0.1:14582 | 3/1            |
+| 4      | udp://:14543@127.0.0.1:14583 | udp://:14550@127.0.0.1:14583 | 4/1            |
+
+- gcs连接：打开QGC后，只需要监听本地14550端口即可完成多机连接；
+- offboard连接：用于启动自定义的机载控制程序后，根据要连接无人机编号对应的UDP地址设置url即可，例如使用mavsdk连接无人机3，则需要创建UDP（本地端口为14542，远端主机127.0.0.1，远端端口14582）。
 
 ### 选择机架
 
@@ -145,6 +162,24 @@ $ ./Tools/gazebo_sitl_multiple_run.sh -m standard_vtol -n 4
 > 注意：
 >
 > 但由于gazebo模型库的限制，并不是所有机型都有，当前支持的仿真机架有[iris plane standard_vtol rover r1_rover typhoon_h480]
+
+### 问题和解决
+
+#### 无人机模型鬼畜
+
+如果模型因尺寸问题彼此有冲突或者跟地面有冲突可能导致模型鬼畜现象。
+
+打开`Tools/gazebo_sitl_multiple_run.sh`修改如下：
+
+```shell
+# 将加载模型时放置到世界中时彼此Y轴距离加大（3->10）
+Y=${Y:=$((10*${N}))}
+
+# 将加载模型时放置到世界中的坐标z加大一些（0->0.5)
+gz model --spawn-file=/tmp/${MODEL}_${N}.sdf --model-name=${MODEL}_${N} -x ${X} -y ${Y} -z 0.5
+```
+
+
 
 ## mavlink设置
 
