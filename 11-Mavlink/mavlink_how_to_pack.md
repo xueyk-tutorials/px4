@@ -63,3 +63,22 @@ mavlink_msg_heartbeat_encode_chan---->mavlink_msg_heartbeat_pack_chan---->mavlin
   - 需要对应传入特定消息结构体内每个成员变量，参数较多，写起来麻烦
 - mavlink_msg_engine_status_send_struct
   - 传入特定消息结构体变量指针即可
+
+
+
+## 示例
+
+### 典型消息的字节序列化
+
+arm指令
+
+```c++
+fd 20 00 00 1e 02 01 4c 00 00 00 00 80 3f 00 00 00 00 d8 7a b7 80 ff ff 00 00 02 00 00 00 00 00 00 00 00 00 00 00 90 01 01 01 af 2d 
+```
+
+disarm指令
+
+```c++
+fd 20 00 00 1f 02 01 4c 00 00 00 00 00 00 00 00 00 00 d8 7a b7 80 ff ff 00 00 02 00 00 00 00 00 00 00 00 00 00 00 90 01 01 01 56 3f
+```
+

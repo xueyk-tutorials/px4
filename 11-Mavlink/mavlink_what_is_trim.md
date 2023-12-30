@@ -10,7 +10,7 @@
 
 ​		获取消息结构体之后，使用mavlink_msg_to_send_buffer函数进行序列化
 
-![image-20230910140128702](D:\A2-alex\Repositories\px4\11-Mavlink\imgs\image-20230910140128702.png)
+![image-20230910140128702](imgs\image-20230910140128702.png)
 
 
 

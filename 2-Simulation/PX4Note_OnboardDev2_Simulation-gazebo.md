@@ -276,8 +276,9 @@ $make px4_sitl_default gazebo
 source /opt/ros/melodic/setup.bash
 source /home/alex/Desktop/PX4-Autopilot/Tools/setup_gazebo.bash /home/alex/Desktop/PX4-Autopilot/ /home/alex/Desktop/PX4-Autopilot/build/px4_sitl_default
 
-export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/Desktop/PX4-Autopilot
-export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/Desktop/PX4-Autopilot/Tools/sitl_gazebo
+source /mnt/e/D-drone/A1-PX4/Firmware/PX4-Autopilot_v1.12.3_learning/Tools/setup_gazebo.bash /mnt/e/D-drone/A1-PX4/Firmware/PX4-Autopilot_v1.12.3_learning/ /mnt/e/D-drone/A1-PX4/Firmware/PX4-Autopilot_v1.12.3_learning/build/px4_sitl_default
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/mnt/e/D-drone/A1-PX4/Firmware/PX4-Autopilot_v1.12.3_learningt
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/mnt/e/D-drone/A1-PX4/Firmware/PX4-Autopilot_v1.12.3_learning/Tools/sitl_gazebo
 ```
 
 ## 启动
