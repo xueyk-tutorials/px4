@@ -385,6 +385,12 @@ void SerialConnection::start_recv_thread()
 
 ## 如何获取飞控数据
 
+### mavlink消息接收和解析
+
+硬件接口（如串口、网口）接收到数据后，调用MAVLinkReceiver::parse_message()函数进行解析，一旦解析出消息后，会调用Connection::receive_message()函数处理接收到的消息。
+
+### 用户获取
+
 用户调用`subscribe_position()`函数设置回调函数，当位置数据更新后会自动调用用户的函数。
 
 ```c++
