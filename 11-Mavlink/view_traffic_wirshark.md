@@ -67,7 +67,7 @@ gazebo：18570  <---->  GCS：14550
 
 - 查看插件路径
 
-  打开软件`wireshark`，在Help->Folders，查看Global Lua Plugins的路径。
+  打开软件`wireshark`，在Help->关于wireshark->Folders，查看Global Lua Plugins的路径。
 
   Ubuntu系统下路径：
 
