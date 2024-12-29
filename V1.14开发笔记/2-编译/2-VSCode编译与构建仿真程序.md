@@ -1,166 +1,66 @@
 
 
-# 仿真编译与构建流程
+# 插件-CMake Tools
 
-## 命令行编译+构建
+为了支持大型C/C++工程开发，微软官网提供了CMake Tools插件，这个插件提供了交互UI与命令，帮助用户灵活配置cmake项目、编译、调试。首先用户需要安装该插件才能在VSCode下搭建PX4开发环境。
 
-```bash
-nextpilot@alex-xiaomi:~/Desktop/repositories/PX4-Autopilot$ make px4_sitl gz_x500
--- PX4 version: v1.14.3 (1.14.3)
--- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3")
--- PX4 config file: /home/nextpilot/Desktop/repositories/PX4-Autopilot/boards/px4/sitl/default.px4board
--- PLATFORM posix
--- ROMFSROOT px4fmu_common
--- ROOTFSDIR .
--- TESTING y
--- ETHERNET y
--- PX4 config: px4_sitl_default
--- PX4 platform: posix
--- PX4 lockstep: enabled
--- The CXX compiler identification is GNU 11.4.0
--- The C compiler identification is GNU 11.4.0
--- The ASM compiler identification is GNU
--- Found assembler: /usr/bin/cc
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /usr/bin/c++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /usr/bin/cc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- cmake build type: RelWithDebInfo
--- Looking for gz-transport12 -- found version 12.2.1
--- Searching for dependencies of gz-transport12
--- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4")
--- Config-file not installed for ZeroMQ -- checking for pkg-config
--- Checking for module 'libzmq >= 4'
---   Found libzmq , version 4.3.4
--- Found ZeroMQ: TRUE (Required is at least version "4")
--- Checking for module 'uuid'
---   Found uuid, version 2.37.2
--- Found UUID: TRUE
--- Looking for gz-utils2 -- found version 2.2.0
--- Searching for dependencies of gz-utils2
--- Searching for <gz-utils2> component [cli]
--- Looking for gz-utils2-cli -- found version 2.2.0
--- Searching for dependencies of gz-utils2-cli
--- Looking for gz-msgs9 -- found version 9.5.0
--- Searching for dependencies of gz-msgs9
--- Looking for gz-math7 -- found version 7.5.1
--- Searching for dependencies of gz-math7
--- Looking for gz-utils2 -- found version 2.2.0
--- Checking for module 'tinyxml2'
---   Found tinyxml2, version 9.0.0
--- Found Java: /usr/bin/java (found version "11.0.24")
--- ROMFS: ROMFS/px4fmu_common
-Architecture:  amd64
-==> CPACK_INSTALL_PREFIX = @DEB_INSTALL_PREFIX@
--- Configuring done
--- Generating done
--- Build files have been written to: /home/nextpilot/Desktop/repositories/PX4-Autopilot/build/px4_sitl_default
-[0/903] git submodule src/drivers/gps/devices
-[1/903] git submodule src/modules/mavlink/mavlink
-[6/903] git submodule src/modules/uxrce_dds_client/Micro-XRCE-DDS-Client
-[902/903] cd /home/nextpilot/Desktop/repositorie...s/PX4-Autopilot/build/px4_sitl_default/bin/px4
+![image-20241202154654937](imgs/image-20241202154654937.png)
 
-______  __   __    ___
-| ___ \ \ \ / /   /   |
-| |_/ /  \ V /   / /| |
-|  __/   /   \  / /_| |
-| |     / /^\ \ \___  |
-\_|     \/   \/     |_/
+另外在插件介绍界面，可以看到微软提供了教程文档，推荐看下前面5个教程链接。
 
-px4 starting.
+# 构建流程
 
-INFO  [px4] startup script: /bin/sh etc/init.d-posix/rcS 0
-INFO  [init] found model autostart file as SYS_AUTOSTART=4001
-INFO  [param] selected parameter default file parameters.bson
-INFO  [param] selected parameter backup file parameters_backup.bson
-  SYS_AUTOCONFIG: curr: 0 -> new: 1
-  SYS_AUTOSTART: curr: 0 -> new: 4001
-  CAL_ACC0_ID: curr: 0 -> new: 1310988
-  CAL_GYRO0_ID: curr: 0 -> new: 1310988
-  CAL_ACC1_ID: curr: 0 -> new: 1310996
-  CAL_GYRO1_ID: curr: 0 -> new: 1310996
-  CAL_ACC2_ID: curr: 0 -> new: 1311004
-  CAL_GYRO2_ID: curr: 0 -> new: 1311004
-  CAL_MAG0_ID: curr: 0 -> new: 197388
-  CAL_MAG0_PRIO: curr: -1 -> new: 50
-  CAL_MAG1_ID: curr: 0 -> new: 197644
-  CAL_MAG1_PRIO: curr: -1 -> new: 50
-* SENS_BOARD_X_OFF: curr: 0.0000 -> new: 0.0000
-* SENS_DPRES_OFF: curr: 0.0000 -> new: 0.0010
-INFO  [dataman] data manager file './dataman' size is 7866640 bytes
-INFO  [init] starting gazebo with world: /home/nextpilot/Desktop/repositories/PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf
-WARN  [init] PX4_GZ_MODEL_NAME or PX4_GZ_MODEL not set using PX4_SIM_MODEL.
-INFO  [gz_bridge] world: default, model name: x500_0, simulation model: x500
-QStandardPaths: wrong permissions on runtime directory /run/user/1000/, 0755 instead of 0700
-libEGL warning: failed to open /dev/dri/renderD128: Permission denied
+## CMake构建流程简介
 
-libEGL warning: NEEDS EXTENSION: falling back to kms_swrast
-INFO  [lockstep_scheduler] setting initial absolute time to 8000 us
-INFO  [commander] LED: open /dev/led0 failed (22)
-INFO  [tone_alarm] home set
-INFO  [mavlink] mode: Normal, data rate: 4000000 B/s on udp port 18570 remote port 14550
-INFO  [tone_alarm] notify negative
-INFO  [mavlink] mode: Onboard, data rate: 4000000 B/s on udp port 14580 remote port 14540
-INFO  [mavlink] mode: Onboard, data rate: 4000 B/s on udp port 14280 remote port 14030
-INFO  [mavlink] mode: Gimbal, data rate: 400000 B/s on udp port 13030 remote port 13280
-INFO  [logger] logger started (mode=all)
-INFO  [logger] Start file log (type: full)
-INFO  [logger] [logger] ./log/2024-11-19/14_22_06.ulg
-INFO  [logger] Opened full log file: ./log/2024-11-19/14_22_06.ulg
-INFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)
-INFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)
-INFO  [px4] Startup script returned successfully
-pxh> INFO  [commander] Ready for takeoff!
-WARN  [health_and_arming_checks] Preflight: GPS Vertical Pos Drift too high
-WARN  [health_and_arming_checks] Preflight: GPS Vertical Pos Drift too high
-```
+通常使用CMake构建和编译项目包括两个步骤：
 
+- 第一步：生成构建文件，通过命令`cmake -Bbuild .`即可创建build文件夹并生成构建文件，可以使用`-G`参数选择生成器，常用的有`Unix Makefiles`、`Ninja`；
+- 第二步：根据构建文件进行编译，通过命令`cmake --build build`即可执行编译并生成可执行文件。
 
+在VSCode通过CMake Tools对PX4项目进行构建本质上也是围绕以上两个步骤展开的。
 
+## 生成构建文件
 
+### 选择编译目标（variant）
 
-## 通过VSCode编译
+PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vscode/cmake-variants.yaml`中。
 
-在VSCode中，选择编译目标为 `px4_sitl_default`，点击Build。
+在VSCode，点击左侧CMake Tools视图窗口，点击Configure下`Select Variant`，既可以选择编译目标。
 
-![image-20241119114142043](E:/A-respository/A-drone_tutorials/px4/V1.14%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/2-%E7%BC%96%E8%AF%91/imgs/image-20241119114142043.png)
+![image-20241202170233343](imgs/image-20241202170233343.png)
 
-点击Build就会执行编译与构建。我们接下来通过VSCode终端OUTPUT打印一步步分析编译流程。
+在VSCode中，默认选择编译目标为 `px4_sitl_default`。
 
-### VSCode准备
+编译目标内有`settings`字段，**用于给cmake命令传入参数**，当选择了编译目标为 `px4_sitl_default`，那么就会给cmake传入`-DCONFIG:string=px4_sitl_default`参数，这样CMakeLists.txt内就可以根据CONFIG参数选择编译对应的文件。
 
-```bash
-[main] Building folder: /home/nextpilot/Desktop/repositories/PX4-Autopilot/build/px4_sitl_default 
-[main] The folder containing the CMake cache is missing. The cache will be regenerated.
-[main] Configuring project: PX4-Autopilot 
-```
+### 生成构建文件
 
-### 生成构建文件夹
+在VSCode，点击左侧CMake Tools视图窗口，点击Configure，既可以启动生成构建文件。
 
-**启动构建命令**
+![image-20241202165906462](imgs/image-20241202165906462.png)
+
+**点击后启动构建命令**：
 
 ```bash
 [proc] Executing command: /usr/bin/cmake -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo -DCONFIG:STRING=px4_sitl_default -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE --no-warn-unused-cli -S/home/nextpilot/Desktop/repositories/PX4-Autopilot -B/home/nextpilot/Desktop/repositories/PX4-Autopilot/build/px4_sitl_default -G Ninja
 [cmake] Not searching for unused variables given on the command line.
 ```
 
-其中`[proc] Executing command`就是调用cmake命令。这里执行的程序为/usr/bin/cmake，传入的编译选项有：
+其中`[proc] Executing command`就是调用cmake命令。类似于在一个cmake工程下运行`cmake -Bbuild .`命令
 
---no-warn-unused-cli：不要警告命令行选项
+这里执行的程序为/usr/bin/cmake，传入的编译选项有：
 
--S/home/.../PX4-Autopilot：指定源码路径，这里就是工程根目录；
+- -DCONFIG:STRING=px4_sitl_default：选择boards/px4/sitl/default.px4board；
 
--B/home/.../build/px4_sitl_default：指定构建文件生成路径，PX4会在工程根目录下创建build文件夹，统一存放各种构建文件；
+- --no-warn-unused-cli：不要警告命令行选项；
 
--G Ninja：生成器选择为Ninja（一个专注于速度的小型构建系统，与make相比启动编译的速度更快），这样就会在`build/px4_sitl_default`目录下生成一个build.ninja文件（这里没有使用make生成器，故不会生成makefile文件）。
+- -S/home/.../PX4-Autopilot：指定源码路径，这里就是工程根目录；
 
-**开始生成构建文件夹**
+- -B/home/.../build/px4_sitl_default：指定构建文件生成路径，PX4会在工程根目录下创建build文件夹，统一存放各种构建文件，这里build路径是通过`.vscode/setting.json`下cmake.buildDirectory设定的；
+
+- -G Ninja：生成器选择为Ninja（一个专注于速度的小型构建系统，与make相比启动编译的速度更快），这样就会在`build/px4_sitl_default`目录下生成一个build.ninja文件（这里没有使用make生成器，故不会生成makefile文件）。
+
+**然后在`build/px4_sitl_default`路径下生成构建文件**：
 
 ```bash
 [cmake] -- PX4 version: v1.14.3 (1.14.3)
@@ -222,6 +122,14 @@ WARN  [health_and_arming_checks] Preflight: GPS Vertical Pos Drift too high
 
 
 
+## 编译
+
+### 点击Build
+
+![image-20241119114142043](E:/A-respository/A-drone_tutorials/px4/V1.14%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/2-%E7%BC%96%E8%AF%91/imgs/image-20241119114142043.png)
+
+点击Build就会执行编译与构建。我们接下来通过VSCode终端OUTPUT打印一步步分析编译流程。
+
 ### 编译与构建过程
 
 调用cmake命令开始构建。
@@ -258,9 +166,99 @@ $ ninja
 
 
 
+# 仿真调试
+
+## launch.json
+
+### 生成launch配置文件
+
+在cmake构建过程中，通过platforms/posix/CMakeLists.txt内的`configure_file()`生成launch.json文件。
+
+```cmake
+# vscode launch.json
+if(${PX4_BOARD_LABEL} MATCHES "replay")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Debug/launch_replay.json.in ${PX4_SOURCE_DIR}/.vscode/launch.json COPYONLY)
+
+else()
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Debug/launch_sitl.json.in ${PX4_SOURCE_DIR}/.vscode/launch.json COPYONLY)
+endif()
+```
+
+这里使用platforms/posix/Debug/launch_sitl.json.in文件来生成。
+
+### 配置内容解析
+
+**配置名称**：在调试工具视图的目标选择列表中列出所有的配置，例如第一个配置名称为`SITL (gz)`；
+
+```json
+    "configurations": [
+        {
+            "name": "SITL (gz)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "${workspaceFolder}/ROMFS/px4fmu_common"
+            ],
+    ],
+```
+
+**type**：设置调试类型，这里为c++程序调试；
+
+**program**：要调试的可执行程序，这里根据cmake-tools中设置的编译目标variant选择对应的程序进行调试；
+
+**args**：设置启动程序后传入的参数；
+
+**environment**：用于设置Linux系统环境变量，使用name-value的方式提供，其中value内的`${input:PX4_GZ_MODEL}`表示从键"input"下取值，其中"input"在launch.json结尾。
+
+这里的environment核心目的就是通过设置系统环境变量，这样在后续运行脚本时根据环境变量进行特定逻辑处理，例如设置PX4_SIM_MODEL后，在运行px4-rc.simulator脚本启动gazebo仿真时方便通过设置好的环境变量获取要加装的模型名称。
+
+```json
+    "configurations": [
+        {
+            "environment": [
+                {
+                    "name": "PX4_SIM_MODEL",
+                    "value": "gz_${input:PX4_GZ_MODEL}"
+                }
+            ],
+        },
+    ],
+    "inputs": [
+        {
+            "type": "pickString",
+            "id": "PX4_GZ_MODEL",
+            "description": "GZ vehicle model",
+            "options": [
+              "x500",
+              "x500_depth",
+              "rc_cessna",
+              "standard_vtol",
+            ],
+            "default": "x500"
+        }
+    ]
+```
+
+参考：[Visual Studio Code Variables Reference](https://code.visualstudio.com/docs/editor/variables-reference)
+
+## 启动调试
+
+在调试工具视图，选择调试目标。
+
+在`.vscode/launch.json`下创建了多个调试配置，如下图：
+
+![image-20241128222950870](imgs/image-20241128222950870.png)
+
+选择模型，这里选择后会设置PX4_SIM_MODEL环境变量值。
+
+![image-20241128222734375](imgs/image-20241128222734375.png)
+
+
+
 # 附录
 
-VSCode编译完整输出
+## VSCode编译仿真的完整输出
 
 ```bash
 [main] Building folder: /home/nextpilot/Desktop/repositories/PX4-Autopilot/build/px4_sitl_default 
