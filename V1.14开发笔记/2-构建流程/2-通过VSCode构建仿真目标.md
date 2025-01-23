@@ -1,8 +1,17 @@
+# 简介
 
+PX4项目在V1.14.x版本，官方推荐基于VSCode搭建IDE（集成开发环境），由于项目使用CMake做为构建工具，故IDE的搭建中需要在VSCode安装CMake插件——CMake Tools，这个插件也是微软官方提供的。
+
+本篇文章主要记录如何在VSCode中使用CMake插件进行PX4项目构建，由于PX4官方文档中只描述了大致流程，而没有细节，如果对于CMake插件和CMake基础知识不了解的话，完全无法理解其背后原理。故本篇文章在以构建流程为主线的基础上，详细分析了其中细节，包括：
+
+- cmake构建流程；
+- 如何选择编译目标以及选择目标后如何起作用的；
+- 仿真调试时的配置；
+- 仿真调试如何传参；
 
 # 插件-CMake Tools
 
-为了支持大型C/C++工程开发，微软官网提供了CMake Tools插件，这个插件提供了交互UI与命令，帮助用户灵活配置cmake项目、编译、调试。首先用户需要安装该插件才能在VSCode下搭建PX4开发环境。
+微软官网提供了CMake Tools插件，可支持大型C/C++工程开发，这个插件提供了交互UI与命令，帮助用户灵活配置cmake项目、编译、调试。首先用户需要安装该插件才能在VSCode下搭建PX4开发环境。
 
 ![image-20241202154654937](imgs/image-20241202154654937.png)
 
@@ -12,22 +21,41 @@
 
 ## CMake构建流程简介
 
-通常使用CMake构建和编译项目包括两个步骤：
+通常CMake构建和编译项目包括两个步骤：
 
 - 第一步：生成构建文件，通过命令`cmake -Bbuild .`即可创建build文件夹并生成构建文件，可以使用`-G`参数选择生成器，常用的有`Unix Makefiles`、`Ninja`；
 - 第二步：根据构建文件进行编译，通过命令`cmake --build build`即可执行编译并生成可执行文件。
 
-在VSCode通过CMake Tools对PX4项目进行构建本质上也是围绕以上两个步骤展开的。
+在VSCode中，通过CMake Tools对PX4项目进行构建本质上也是围绕以上两个步骤展开的。
 
 ## 生成构建文件
 
 ### 选择编译目标（variant）
 
-PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vscode/cmake-variants.yaml`中。
-
 在VSCode，点击左侧CMake Tools视图窗口，点击Configure下`Select Variant`，既可以选择编译目标。
 
 ![image-20241202170233343](imgs/image-20241202170233343.png)
+
+PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vscode/cmake-variants.yaml`中，部分目标定义如下：
+
+```yaml
+CONFIG:
+  default: px4_sitl_default
+  choices:
+    px4_sitl_default:
+      short: px4_sitl_default
+      buildType: RelWithDebInfo
+      settings:
+        CONFIG: px4_sitl_default
+    # ......
+    px4_fmu-v5_default:
+      short: px4_fmu-v5
+      buildType: MinSizeRel
+      settings:
+        CONFIG: px4_fmu-v5_default
+```
+
+> 每个variant都有一个简称（short字段），这个简称就会显示在CMake Tools视图窗口中和下拉选择列表中。
 
 在VSCode中，默认选择编译目标为 `px4_sitl_default`。
 
@@ -46,7 +74,7 @@ PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vsc
 [cmake] Not searching for unused variables given on the command line.
 ```
 
-其中`[proc] Executing command`就是调用cmake命令。类似于在一个cmake工程下运行`cmake -Bbuild .`命令
+其中`[proc] Executing command`就是表示VSCode调用cmake命令。类似于在一个cmake工程下运行`cmake -Bbuild .`命令
 
 这里执行的程序为/usr/bin/cmake，传入的编译选项有：
 
@@ -126,13 +154,15 @@ PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vsc
 
 ### 点击Build
 
-![image-20241119114142043](E:/A-respository/A-drone_tutorials/px4/V1.14%E5%BC%80%E5%8F%91%E7%AC%94%E8%AE%B0/2-%E7%BC%96%E8%AF%91/imgs/image-20241119114142043.png)
+点击Build就会执行编译与构建。
 
-点击Build就会执行编译与构建。我们接下来通过VSCode终端OUTPUT打印一步步分析编译流程。
+![image-20241119114142043](imgs/image-20241119114142043.png)
 
-### 编译与构建过程
+我们接下来通过VSCode终端OUTPUT打印一步步分析编译流程。
 
-调用cmake命令开始构建。
+### 编译过程
+
+调用cmake命令开始编译。
 
 ```bash
 [build] Starting build
@@ -156,21 +186,21 @@ PX4项目提供了很多个编译目标，这些编译目标定义在文件`.vsc
 [build] Build finished with exit code 0
 ```
 
-
-
-cmake构建命令为`cmake --build <path-to-build>`，这将根据选择的不同生成器调用对应的构建命令。由于这里选用的Ninja生成器，故相当于调用如下构建命令：
+cmake执行编译的命令为`cmake --build <path-to-build>`，这将根据选择的生成器对于的构建文件而调用对应的编译命令。由于这里选用的Ninja生成器，故相当于调用如下构建命令：
 
 ```bash
-$ ninja
+$ cmake --build <path-to-build>
+# 等效于ninja命令如下：
+$ ninja <path-to-build>
 ```
 
-
+**编译完成后生成的可执行文件为build/px4_sitl_default/bin/px4。**
 
 # 仿真调试
 
-## launch.json
+## 生成配置文件
 
-### 生成launch配置文件
+### launch.json
 
 在cmake构建过程中，通过platforms/posix/CMakeLists.txt内的`configure_file()`生成launch.json文件。
 
@@ -186,7 +216,21 @@ endif()
 
 这里使用platforms/posix/Debug/launch_sitl.json.in文件来生成。
 
-### 配置内容解析
+### c_cpp_properties.json
+
+通过`platforms/common/CMakeLists.txt`文件内的`configure_file()`生成。
+
+```cmake
+if("${PX4_PLATFORM}" MATCHES "nuttx")
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/c_cpp_properties.json.nuttx.in ${PX4_SOURCE_DIR}/.vscode/c_cpp_properties.json @ONLY)
+else()
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/c_cpp_properties.json.in ${PX4_SOURCE_DIR}/.vscode/c_cpp_properties.json @ONLY)
+endif()
+```
+
+
+
+## launch.json内容解析
 
 **配置名称**：在调试工具视图的目标选择列表中列出所有的配置，例如第一个配置名称为`SITL (gz)`；
 
