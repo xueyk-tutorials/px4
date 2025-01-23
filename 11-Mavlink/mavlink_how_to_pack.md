@@ -70,6 +70,14 @@ mavlink_msg_heartbeat_encode_chan---->mavlink_msg_heartbeat_pack_chan---->mavlin
 
 ### 典型消息的字节序列化
 
+心跳包
+
+```bash
+fd 9 0 0 0 2 1 0 0 0 0 0 1 0 2 c 1 f7 3 9c 9b
+```
+
+
+
 arm指令
 
 ```c++
