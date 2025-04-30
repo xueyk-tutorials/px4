@@ -47,12 +47,12 @@ Packet format定义了mavlink通信协议的数据包格式，打包与解析都
 | 7 to 9           | `uint24_t msgid:24`        | Message ID (low, middle, high bytes)                         | 0 - 16777215 | ID of *message type* in payload. Used to decode data back into message object. |
 | 10 to (n+10)     | `uint8_t payload[max 255]` | [Payload](https://mavlink.io/en/guide/serialization.html#payload) |              | Message data. Depends on message type (i.e. Message ID) and contents. |
 | (n+11) to (n+12) | `uint16_t checksum`        | [Checksum](https://mavlink.io/en/guide/serialization.html#checksum) (low byte, high byte) |              | X.25 CRC for message (excluding `magic` byte). Includes [CRC_EXTRA](https://mavlink.io/en/guide/serialization.html#crc_extra) byte. |
-| (n+13) to (n+26) | `uint8_t signature[13]`    | [Signature](https://mavlink.io/en/guide/message_signing.html) |              | (Optional) Signature to ensure the link is tamper-proof.     |
+| (n+13) to (n+25) | `uint8_t signature[13]`    | [Signature](https://mavlink.io/en/guide/message_signing.html) |              | (Optional) Signature to ensure the link is tamper-proof.     |
 
 
 
-- 最小包长度为12字节，这时payload为空，且不包含签名，例如acknowledgment消息。
-- 最大包长度为280字节，这时包括了签名信息，并且payload是满字节（即255个字节）。
+- 最小包长度为13字节，这时payload为空，且不包含签名，例如acknowledgment消息。
+- 最大包长度为281字节，这时包括了签名信息，并且payload是满字节（即255个字节）。
 
 ### Payload Format
 
