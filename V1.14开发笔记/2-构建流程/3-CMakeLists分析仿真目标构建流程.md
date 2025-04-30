@@ -410,6 +410,68 @@ execute_process(
 
 
 
+# ROMFS
+
+ROMFS文件夹中，主要包括了启动文件脚本，在编译时会将相关启动脚本拷贝至build路径下。
+
+## 添加romfs文件
+
+1. 定义属性PX4_ROMFS_FILES
+
+```cmake
+set_property(GLOBAL PROPERTY PX4_ROMFS_FILES)
+```
+
+2. 定义函数px4_add_romfs_files()
+
+通过px4_add_romfs_files()函数添加romfs文件，该函数定义在`ROMFS/CMakeLists.txt`中。调用该函数时将文件放到PX4_ROMFS_FILES属性中。
+
+3. 添加文件
+
+然后在中`ROMFS/px4fmu_common/init.d-posix/CMakeLists.txt`文件下使用px4_add_romfs_files()函数添加了相关文件，例如：
+
+```cmake
+add_subdirectory(airframes)
+px4_add_romfs_files(
+	px4-rc.mavlink
+	px4-rc.params
+	px4-rc.simulator
+	rc.replay
+	rcS
+)
+```
+
+4. 生成压缩包
+
+在build目录下创建romfs_files.tar。
+
+```cmake
+set(romfs_tar_file ${PX4_BINARY_DIR}/romfs_files.tar)
+```
+
+将所有使用px4_add_romfs_files()函数添加的文件放入压缩包。
+
+```cmake
+COMMAND ${CMAKE_COMMAND} -E tar cf ${romfs_tar_file} ${romfs_copy_files_relative}
+```
+
+5. 解压至build/etc路径
+
+将压缩包解压至`build/etc`目录下。
+
+```cmake
+set(romfs_gen_root_dir ${PX4_BINARY_DIR}/etc)
+
+add_custom_command(
+COMMAND ${CMAKE_COMMAND} -E tar xf ${romfs_tar_file}
+WORKING_DIRECTORY ${romfs_gen_root_dir}
+}
+```
+
+这样程序运行后，就可以从查找`build/px4_sitl_default/etc/init.d-posix/rcS`脚本并启动。
+
+
+
 # 附录
 
 ## PX4_MODULE_LIBRARIES
