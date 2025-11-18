@@ -148,6 +148,62 @@ Ref:https://dev.px4.io/v1.10/zh/companion_computer/pixhawk_companion.html
 
 
 
+## 光流
+
+### 参考
+
+[PX4FLOW Smart Camera | PX4 User Guide (v1.12)](https://px-4.com/v1.12/en/sensor/px4flow.html)
+
+
+
+### 使用
+
+- 配置参数
+
+| Parameter                                                    | Description                                                  | 值                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [SENS_EN_PX4FLOW](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#SENS_EN_PX4FLOW) | Start the PX4 Flow driver.                                   | 设置为1                                                      |
+| [SENS_FLOW_MAXHGT](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#SENS_FLOW_MAXHGT) | Maximum height above ground when reliant on optical flow.    | 3                                                            |
+| [SENS_FLOW_MINHGT](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#SENS_FLOW_MINHGT) | Minimum height above ground when reliant on optical flow.    | 0.7                                                          |
+| [SENS_FLOW_MAXR](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#SENS_FLOW_MAXR) | Maximum angular flow rate reliably measurable by the optical flow sensor. |                                                              |
+| [SENS_FLOW_ROT](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#SENS_FLOW_ROT) | Yaw rotation of the PX4FLOW board relative to the vehicle body frame. | 默认为0：如果光流X轴与无人机X轴一致；<br />设置为1：如果光流模块Y轴与无人机X轴一致。 |
+
+- 查看消息
+
+在mavlink消息列表中可以看到ODOMETRY(30Hz)、OPTIC_FLOW_RAD(10Hz)两个消息。
+
+注意：由于消息通过USB连接才能看到。
+
+- EKF融合
+
+设置 [EKF2_AID_MASK](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#EKF2_AID_MASK)参数为2，即可在EKF2中使用光流进行速度融合。
+
+- 偏移设置
+
+如果光流量传感器偏离载具中心，可以使用以下参数进行设置。注意这里的位置是无人机FRD参考系，坐标原点为无人机重心。
+
+| 参数                                                         | 说明                                             |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+| [EKF2_OF_POS_X](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#EKF2_OF_POS_X) | 光流焦点在主体框架中的 X 位置（默认为 0.0m）。   |
+| [EKF2_OF_POS_Y](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#EKF2_OF_POS_Y) | 光流焦点在主体框架中的 Y 位置（默认为 0.0m）。   |
+| [EKF2_OF_POS_Z](https://px-4.com/v1.12/en/advanced_config/parameter_reference.html#EKF2_OF_POS_Z) | 光流焦点在主体框架中的 Z 位置（默认为 0.0 米）。 |
+
+### 飞行
+
+安装至无人机后，可以切至定点模式，实现悬停。
+
+### 调试
+
+直接连接PX4Flow至计算机，打开QGC即可自动连接。
+
+#### 查看图像
+
+在QGC配置界面中，可以打开PX4Flow，实时显示光流图像。
+
+#### 消息
+
+在mavlink消息列表中可以看到HEARTBEAT、LOCAL_POSITION_NED、OPTIC_FLOW、OPTIC_FLOW_RAD等消息。
+
 ## 虚拟摇杆
 
 要在PX4中启用游戏杆支持，您需要将参数设置COM_RC_IN_MODE为1 - 游戏杆/无RC校验。如果此参数未设置，则游戏杆不会作为设置选项提供。
